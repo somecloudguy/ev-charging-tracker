@@ -21,12 +21,12 @@
             <div class="sidebar-header">
                 <div class="car-avatar">🚗</div>
                 <div class="car-info">
-                    <h3>Tata Nexon EV</h3>
+                    <h3>MyEV Prime</h3>
                     <span class="plate">MH 01 AB 1234</span>
                 </div>
             </div>
             <nav class="sidebar-nav">
-                <button class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+                <button class="nav-item" data-section="dashboard" onclick="switchSection('dashboard')">
                     <span class="nav-icon">🏠</span>
                     <span class="nav-label">Dashboard</span>
                 </button>
@@ -34,7 +34,7 @@
                     <span class="nav-icon">🚙</span>
                     <span class="nav-label">My Car</span>
                 </button>
-                <button class="nav-item" data-section="charging" onclick="switchSection('charging')">
+                <button class="nav-item active" data-section="charging" onclick="switchSection('charging')">
                     <span class="nav-icon">🔌</span>
                     <span class="nav-label">My Charging</span>
                 </button>
@@ -77,11 +77,11 @@
         <main class="main-content">
             
             <!-- Dashboard Section -->
-            <section id="dashboardSection" class="section active">
+            <section id="dashboardSection" class="section">
                 <div class="car-status-card">
                     <div class="car-visual">
                         <div class="car-image">🚗</div>
-                        <div class="car-name">Tata Nexon EV Max</div>
+                        <div class="car-name">MyEV Prime Max</div>
                         <div class="last-updated">Last synced: 2 mins ago</div>
                     </div>
                     <div class="status-grid">
@@ -171,7 +171,7 @@
                     <div class="info-list">
                         <div class="info-row">
                             <span class="info-label">Model</span>
-                            <span class="info-value">Tata Nexon EV Max</span>
+                            <span class="info-value">MyEV Prime Max</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Year</span>
@@ -179,11 +179,11 @@
                         </div>
                         <div class="info-row">
                             <span class="info-label">Color</span>
-                            <span class="info-value">Intensi-Teal</span>
+                            <span class="info-value">Ocean Blue</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">VIN</span>
-                            <span class="info-value">MAT***********7892</span>
+                            <span class="info-value">MEV***********7892</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Registration</span>
@@ -243,7 +243,7 @@
             </section>
 
             <!-- Charging Section (Our Main Feature) -->
-            <section id="chargingSection" class="section">
+            <section id="chargingSection" class="section active">
                 <!-- Sub-navigation -->
                 <nav class="sub-tabs">
                     <button class="sub-tab active" data-tab="home" onclick="switchChargingTab('home')">🏠 Home</button>
@@ -503,7 +503,7 @@
                 <div class="section-card">
                     <h3>📞 Service Center</h3>
                     <div class="service-center">
-                        <div class="center-name">Tata Motors - Andheri</div>
+                        <div class="center-name">MyEV Service - Andheri</div>
                         <div class="center-address">Plot 42, MIDC, Andheri East</div>
                         <div class="center-actions">
                             <button class="btn btn-secondary">📞 Call</button>
@@ -525,7 +525,7 @@
                     <h3>Nearby Chargers</h3>
                     <div class="charger-card">
                         <div class="charger-header">
-                            <span class="charger-name">⚡ Tata Power - Phoenix Mall</span>
+                            <span class="charger-name">⚡ EV Power Hub - Phoenix Mall</span>
                             <span class="charger-distance">2.4 km</span>
                         </div>
                         <div class="charger-details">
