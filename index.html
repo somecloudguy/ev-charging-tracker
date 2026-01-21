@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>EV Charging Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>🔋 EV Tracker</h1>
+            <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+        </header>
+
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel hidden">
+            <div class="settings-content">
+                <h3>Settings</h3>
+                <div class="form-group">
+                    <label>Battery Capacity (kWh)</label>
+                    <input type="number" id="batteryCapacity" step="0.1" value="30">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+                <button class="btn btn-secondary" onclick="toggleSettings()">Cancel</button>
+                <hr>
+                <h4>Data Management</h4>
+                <button class="btn btn-secondary" onclick="exportData()">📤 Export JSON</button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab active" data-tab="add" onclick="switchTab('add')">➕ Add</button>
+            <button class="tab" data-tab="insights" onclick="switchTab('insights')">📊 Insights</button>
+            <button class="tab" data-tab="history" onclick="switchTab('history')">📋 History</button>
+        </nav>
+
+        <!-- Add Charge Tab -->
+        <section id="addTab" class="tab-content active">
+            <form id="chargeForm" class="charge-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Odometer (km)</label>
+                        <input type="number" id="odometer" placeholder="12345" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start %</label>
+                        <input type="number" id="startPercent" min="0" max="100" placeholder="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End %</label>
+                        <input type="number" id="endPercent" min="0" max="100" placeholder="80" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Time (hours)</label>
+                        <input type="number" id="timeToCharge" step="0.1" placeholder="2.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>kWh Used</label>
+                        <input type="number" id="kwhUsed" step="0.1" placeholder="15" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cost/kWh (₹)</label>
+                        <input type="number" id="costPerKwh" step="0.01" placeholder="8.50" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Charge Type</label>
+                        <select id="chargeType" required>
+                            <option value="Slow">Slow</option>
+                            <option value="Fast">Fast</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-large">💾 Save Charge</button>
+            </form>
+        </section>
+
+        <!-- Insights Tab -->
+        <section id="insightsTab" class="tab-content">
+            <div class="sort-row">
+                <select id="insightsSort" onchange="loadInsights()">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                </select>
+            </div>
+            <div id="insightsList" class="insights-list"></div>
+            <div id="chartsContainer" class="charts-container">
+                <h3>📈 Trends</h3>
+                <div class="chart-wrapper">
+                    <canvas id="rangeChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="costChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="historyTab" class="tab-content">
+            <div class="sort-row">
+                <select id="historySort" onchange="loadHistory()">
+                    <option value="oldest">Oldest first</option>
+                    <option value="newest">Newest first</option>
+                </select>
+                <button class="btn btn-danger btn-small" onclick="deleteAllData()">🗑️ Clear All</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+        </section>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
