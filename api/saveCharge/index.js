@@ -1,7 +1,7 @@
 const { CosmosClient } = require('@azure/cosmos');
+const { DefaultAzureCredential } = require('@azure/identity');
 
 const endpoint = process.env.COSMOS_ENDPOINT;
-const key = process.env.COSMOS_KEY;
 const databaseId = 'EVData';
 const containerId = 'Charges';
 
@@ -11,7 +11,9 @@ let container = null;
 async function getContainer() {
     if (container) return container;
     
-    client = new CosmosClient({ endpoint, key });
+    // Use Managed Identity for authentication
+    const credential = new DefaultAzureCredential();
+    client = new CosmosClient({ endpoint, aadCredentials: credential });
     const { database } = await client.databases.createIfNotExists({ id: databaseId });
     const { container: cont } = await database.containers.createIfNotExists({ 
         id: containerId,
