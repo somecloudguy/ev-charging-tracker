@@ -392,40 +392,68 @@ async function importExcel(event) {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         
-        // Skip header row, process data rows
+        if (rows.length < 2) {
+            showToast('Excel file is empty', 'error');
+            return;
+        }
+        
+        // Get header row and normalize column names
+        const headers = rows[0].map(h => String(h).toLowerCase().trim().replace(/_/g, ' '));
+        
+        // Map column indices based on header names
+        const colMap = {
+            date: findColumn(headers, ['date', 'charging date']),
+            startPercent: findColumn(headers, ['start percent', 'start %', 'start', 'startsoc']),
+            endPercent: findColumn(headers, ['end percent', 'end %', 'end', 'endsoc']),
+            chargeType: findColumn(headers, ['charge type', 'type', 'mode']),
+            timeToCharge: findColumn(headers, ['time to charge', 'time', 'hours', 'duration']),
+            kwhUsed: findColumn(headers, ['kwh used', 'kwh', 'energy', 'units']),
+            costPerKwh: findColumn(headers, ['cost per kwh', 'cost', 'rate', 'price']),
+            odometer: findColumn(headers, ['odometer', 'odo', 'km', 'mileage'])
+        };
+        
+        console.log('Column mapping:', colMap);
+        console.log('Headers found:', headers);
+        
+        // Process data rows
         const charges = [];
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            if (!row || row.length < 7) continue;
+            if (!row || row.length < 3) continue;
             
-            // Parse date - handle Excel date serial numbers
-            let dateValue = row[0];
+            // Parse date
+            let dateValue = colMap.date >= 0 ? row[colMap.date] : row[0];
             if (typeof dateValue === 'number') {
-                // Excel date serial number
                 const date = new Date((dateValue - 25569) * 86400 * 1000);
                 dateValue = date.toISOString().split('T')[0];
             } else if (dateValue instanceof Date) {
                 dateValue = dateValue.toISOString().split('T')[0];
             } else if (typeof dateValue === 'string') {
-                // Try to parse string date
                 const parsed = new Date(dateValue);
                 if (!isNaN(parsed)) {
                     dateValue = parsed.toISOString().split('T')[0];
                 }
             }
             
-            const charge = {
-                date: dateValue,
-                odometer: parseFloat(row[1]) || 0,
-                startPercent: parseFloat(row[2]) || 0,
-                endPercent: parseFloat(row[3]) || 0,
-                timeToCharge: parseFloat(row[4]) || 0,
-                kwhUsed: parseFloat(row[5]) || 0,
-                costPerKwh: parseFloat(row[6]) || 0,
-                chargeType: row[7] || 'Slow'
+            const getValue = (col, defaultVal = 0) => {
+                if (col < 0 || col >= row.length) return defaultVal;
+                const val = parseFloat(row[col]);
+                return isNaN(val) ? defaultVal : val;
             };
             
-            if (charge.odometer > 0 && charge.date) {
+            const charge = {
+                date: dateValue,
+                odometer: getValue(colMap.odometer),
+                startPercent: getValue(colMap.startPercent),
+                endPercent: getValue(colMap.endPercent),
+                timeToCharge: getValue(colMap.timeToCharge),
+                kwhUsed: getValue(colMap.kwhUsed),
+                costPerKwh: getValue(colMap.costPerKwh),
+                chargeType: colMap.chargeType >= 0 ? (row[colMap.chargeType] || 'Slow') : 'Slow'
+            };
+            
+            // Validate - must have date and at least some valid data
+            if (charge.date && (charge.odometer > 0 || charge.kwhUsed > 0)) {
                 charges.push(charge);
             }
         }
@@ -461,6 +489,15 @@ async function importExcel(event) {
         console.error('Excel import error:', error);
         showToast('Error reading Excel file', 'error');
     }
+}
+
+// Helper to find column index by possible header names
+function findColumn(headers, possibleNames) {
+    for (const name of possibleNames) {
+        const idx = headers.findIndex(h => h.includes(name));
+        if (idx >= 0) return idx;
+    }
+    return -1;
 }
 
 // Utility functions
