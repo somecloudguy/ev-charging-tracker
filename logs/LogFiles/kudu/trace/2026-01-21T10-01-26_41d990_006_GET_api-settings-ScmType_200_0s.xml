@@ -1,0 +1,4 @@
+<step title="Incoming Request" date="2026-01-21T10:01:26.974" instance="41d990" url="/api/settings/ScmType" method="GET" type="request" pid="831,1,5" Host="ev-tracker-app.scm.azurewebsites.net" User-Agent="Azure-WebSites-Controller/106.0.7.121" Authorization="Bas..." x-ms-request-id="ecb586af-868c-44c2-b537-af0f63167840" X-ARR-LOG-ID="ecb586af-868c-44c2-b537-af0f63167840" CLIENT-IP="20.192.171.2:21018" X-SITE-DEPLOYMENT-ID="ev-tracker-app" WAS-DEFAULT-HOSTNAME="ev-tracker-app.scm.azurewebsites.net" X-MS-PLATFORM-INTERNAL="True" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/settings/ScmType" X-Client-IP="20.192.171.2" X-Client-Port="21018" >
+  <step title="Cleanup Xml Logs" date="2026-01-21T10:01:26.978" /><!-- duration: 9ms -->
+  <step title="Outgoing response" date="2026-01-21T10:01:26.999" type="response" statusCode="200" statusText="OK" /><!-- duration: 5ms -->
+</step><!-- duration: 36ms -->

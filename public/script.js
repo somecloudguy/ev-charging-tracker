@@ -124,7 +124,12 @@ function loadInsights() {
     const sortOrder = document.getElementById('insightsSort').value;
     const batteryCapacity = getBatteryCapacity();
     
-    let sortedData = [...chargeData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    // Sort by date first, then by odometer for same-day charges
+    let sortedData = [...chargeData].sort((a, b) => {
+        const dateDiff = new Date(a.date) - new Date(b.date);
+        if (dateDiff !== 0) return dateDiff;
+        return a.odometer - b.odometer;
+    });
     
     const insights = [];
     for (let i = 0; i < sortedData.length; i++) {
