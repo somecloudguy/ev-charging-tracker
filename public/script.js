@@ -304,27 +304,27 @@ function loadHistory() {
                 </div>
                 <div class="details">
                     <div class="detail-item">
-                        <strong>${charge.startPercent}% → ${charge.endPercent}%</strong>
+                        <strong>${Math.round(charge.startPercent)}% → ${Math.round(charge.endPercent)}%</strong>
                         <span>Battery</span>
                     </div>
                     <div class="detail-item">
-                        <strong>${charge.kwhUsed} kWh</strong>
+                        <strong>${parseFloat(charge.kwhUsed).toFixed(1)} kWh</strong>
                         <span>Charged</span>
                     </div>
                     <div class="detail-item">
-                        <strong>₹${charge.costPerKwh}</strong>
+                        <strong>₹${parseFloat(charge.costPerKwh).toFixed(2)}</strong>
                         <span>per kWh</span>
                     </div>
                     <div class="detail-item">
-                        <strong>${charge.timeToCharge}h</strong>
+                        <strong>${parseFloat(charge.timeToCharge).toFixed(1)}h</strong>
                         <span>Duration</span>
                     </div>
                     <div class="detail-item">
-                        <strong>${charge.odometer} km</strong>
+                        <strong>${Math.round(charge.odometer).toLocaleString()} km</strong>
                         <span>Odometer</span>
                     </div>
                     <div class="detail-item">
-                        <strong>₹${(charge.kwhUsed * charge.costPerKwh).toFixed(0)}</strong>
+                        <strong>₹${(parseFloat(charge.kwhUsed) * parseFloat(charge.costPerKwh)).toFixed(0)}</strong>
                         <span>Total Cost</span>
                     </div>
                 </div>
@@ -338,8 +338,8 @@ function updateCharts(data) {
     if (data.length < 2) return;
     
     const labels = data.map(d => formatDate(d.date, true));
-    const rangeData = data.map(d => d.estimatedRange);
-    const costData = data.map(d => d.costPerKm);
+    const rangeData = data.map(d => Math.round(d.estimatedRange));
+    const costData = data.map(d => parseFloat(d.costPerKm.toFixed(2)));
     
     const chartOptions = {
         responsive: true,
