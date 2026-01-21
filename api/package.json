@@ -1,0 +1,9 @@
+{
+  "name": "ev-tracker-api",
+  "version": "1.0.0",
+  "description": "API functions for EV Charging Tracker",
+  "main": "index.js",
+  "dependencies": {
+    "@azure/cosmos": "^4.0.0"
+  }
+}
