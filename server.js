@@ -10,10 +10,10 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Cosmos DB setup
-const endpoint = process.env.COSMOS_ENDPOINT || 'https://evtrackerdb.documents.azure.com:443/';
-const databaseId = 'EVData';
-const containerId = 'Charges';
+// Cosmos DB setup - endpoint must be set via environment variable
+const endpoint = process.env.COSMOS_ENDPOINT;
+const databaseId = process.env.COSMOS_DATABASE || 'EVData';
+const containerId = process.env.COSMOS_CONTAINER || 'Charges';
 
 let container;
 
