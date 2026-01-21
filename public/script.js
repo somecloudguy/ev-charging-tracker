@@ -25,16 +25,6 @@ function initApp() {
     loadAllData();
 }
 
-// Modal functions
-function openAddModal() {
-    document.getElementById('addModal').classList.remove('hidden');
-    document.getElementById('date').valueAsDate = new Date();
-}
-
-function closeAddModal() {
-    document.getElementById('addModal').classList.add('hidden');
-}
-
 // Tab navigation
 function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(tab => {
@@ -45,10 +35,12 @@ function switchTab(tabName) {
         content.classList.toggle('active', content.id === tabName + 'Tab');
     });
     
-    if (tabName === 'insights') {
+    if (tabName === 'journeys') {
         loadInsights();
     } else if (tabName === 'history') {
         loadHistory();
+    } else if (tabName === 'home') {
+        updateCharts(getValidInsights());
     }
 }
 
@@ -104,7 +96,6 @@ async function handleFormSubmit(e) {
             showToast('✓ Charge saved!', 'success');
             document.getElementById('chargeForm').reset();
             document.getElementById('date').valueAsDate = new Date();
-            closeAddModal();
             loadAllData();
         } else {
             const error = await response.json();
@@ -122,12 +113,61 @@ async function loadAllData() {
         const response = await fetch('/api/charges');
         if (response.ok) {
             chargeData = await response.json();
+            updateCharts(getValidInsights());
             loadInsights();
             loadHistory();
         }
     } catch (error) {
         console.error('Error loading data:', error);
     }
+}
+
+// Get valid insights for charts
+function getValidInsights() {
+    const batteryCapacity = getBatteryCapacity();
+    let sortedData = [...chargeData].sort((a, b) => {
+        const dateDiff = new Date(a.date) - new Date(b.date);
+        if (dateDiff !== 0) return dateDiff;
+        return a.odometer - b.odometer;
+    });
+    
+    const insights = [];
+    for (let i = 0; i < sortedData.length; i++) {
+        const current = sortedData[i];
+        const previous = i > 0 ? sortedData[i - 1] : null;
+        
+        const kmRun = previous ? current.odometer - previous.odometer : 0;
+        const startOdometer = previous ? previous.odometer : 0;
+        const endOdometer = current.odometer;
+        const percentUsed = previous ? previous.endPercent - current.startPercent : 0;
+        
+        let estimatedRange = 0;
+        if (percentUsed > 0) {
+            estimatedRange = (kmRun / percentUsed) * 100;
+        }
+        
+        const kwhConsumed = (percentUsed / 100) * batteryCapacity;
+        const costPerKwh = previous ? previous.costPerKwh : current.costPerKwh;
+        
+        let costPerKm = 0;
+        if (kmRun > 0 && kwhConsumed > 0) {
+            costPerKm = (kwhConsumed * costPerKwh) / kmRun;
+        }
+        
+        if (kmRun > 0) {
+            insights.push({
+                ...current,
+                kmRun,
+                startOdometer,
+                endOdometer,
+                percentUsed,
+                estimatedRange,
+                kwhConsumed,
+                costPerKm
+            });
+        }
+    }
+    return insights;
 }
 
 // Load insights with calculations
@@ -165,10 +205,6 @@ function loadInsights() {
             costPerKm = (kwhConsumed * costPerKwh) / kmRun;
         }
         
-        const chargingSpeed = current.timeToCharge > 0 
-            ? current.kwhUsed / current.timeToCharge 
-            : 0;
-        
         insights.push({
             ...current,
             kmRun,
@@ -177,8 +213,7 @@ function loadInsights() {
             percentUsed,
             estimatedRange,
             kwhConsumed,
-            costPerKm,
-            chargingSpeed
+            costPerKm
         });
     }
     
@@ -190,8 +225,8 @@ function loadInsights() {
     if (validInsights.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="icon">📊</div>
-                <p>Add at least 2 charging cycles to see insights</p>
+                <div class="icon">🚗</div>
+                <p>Add at least 2 charging sessions to see journey insights</p>
             </div>
         `;
         return;
@@ -200,7 +235,6 @@ function loadInsights() {
     container.innerHTML = validInsights.map(insight => {
         const rangeClass = insight.estimatedRange > 200 ? 'good' : (insight.estimatedRange < 160 ? 'bad' : '');
         const costClass = insight.costPerKm > 3 ? 'bad' : 'good';
-        const speedClass = insight.chargingSpeed > 4 ? 'bad' : 'good';
         
         return `
             <div class="insight-card">
@@ -217,20 +251,18 @@ function loadInsights() {
                         <div class="value">₹${insight.costPerKm.toFixed(2)}</div>
                         <div class="label">Cost/km</div>
                     </div>
-                    <div class="metric ${speedClass}">
-                        <div class="value">${insight.chargingSpeed.toFixed(1)}</div>
-                        <div class="label">Speed (kW)</div>
-                    </div>
                     <div class="metric">
                         <div class="value">${insight.kmRun.toFixed(0)}</div>
                         <div class="label">km Run</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">${insight.percentUsed.toFixed(0)}%</div>
+                        <div class="label">Battery Used</div>
                     </div>
                 </div>
             </div>
         `;
     }).join('');
-    
-    updateCharts(validInsights.reverse());
 }
 
 // Load history
@@ -248,48 +280,57 @@ function loadHistory() {
     if (sortedData.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="icon">📋</div>
+                <div class="icon">🔌</div>
                 <p>No charging history yet</p>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = sortedData.map(charge => `
-        <div class="history-card">
-            <div class="header-row">
-                <span class="date">📅 ${formatDate(charge.date)}</span>
-                <span class="type ${charge.chargeType?.toLowerCase()}">${charge.chargeType || 'Slow'}</span>
-                <button class="delete-btn" onclick="deleteCharge('${charge.id}')">🗑️</button>
+    container.innerHTML = sortedData.map(charge => {
+        const chargingSpeed = parseFloat(charge.timeToCharge) > 0 
+            ? (parseFloat(charge.kwhUsed) / parseFloat(charge.timeToCharge)).toFixed(1) 
+            : '—';
+        
+        return `
+            <div class="history-card">
+                <div class="header-row">
+                    <span class="date">📅 ${formatDate(charge.date)}</span>
+                    <div class="badges">
+                        <span class="type ${charge.chargeType?.toLowerCase()}">${charge.chargeType || 'Slow'}</span>
+                        <span class="speed-badge">⚡ ${chargingSpeed} kW</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteCharge('${charge.id}')">🗑️</button>
+                </div>
+                <div class="details">
+                    <div class="detail-item">
+                        <strong>${charge.startPercent}% → ${charge.endPercent}%</strong>
+                        <span>Battery</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>${charge.kwhUsed} kWh</strong>
+                        <span>Charged</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>₹${charge.costPerKwh}</strong>
+                        <span>per kWh</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>${charge.timeToCharge}h</strong>
+                        <span>Duration</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>${charge.odometer} km</strong>
+                        <span>Odometer</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>₹${(charge.kwhUsed * charge.costPerKwh).toFixed(0)}</strong>
+                        <span>Total Cost</span>
+                    </div>
+                </div>
             </div>
-            <div class="details">
-                <div class="detail-item">
-                    <strong>${charge.startPercent}% → ${charge.endPercent}%</strong>
-                    <span>Battery</span>
-                </div>
-                <div class="detail-item">
-                    <strong>${charge.kwhUsed} kWh</strong>
-                    <span>Charged</span>
-                </div>
-                <div class="detail-item">
-                    <strong>₹${charge.costPerKwh}</strong>
-                    <span>per kWh</span>
-                </div>
-                <div class="detail-item">
-                    <strong>${charge.timeToCharge}h</strong>
-                    <span>Duration</span>
-                </div>
-                <div class="detail-item">
-                    <strong>${charge.odometer} km</strong>
-                    <span>Odometer</span>
-                </div>
-                <div class="detail-item">
-                    <strong>₹${(charge.kwhUsed * charge.costPerKwh).toFixed(0)}</strong>
-                    <span>Total Cost</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Update charts

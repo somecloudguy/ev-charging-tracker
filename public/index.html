@@ -41,12 +41,14 @@
 
         <!-- Navigation Tabs -->
         <nav class="tabs">
-            <button class="tab active" data-tab="insights" onclick="switchTab('insights')">📊 Insights</button>
-            <button class="tab" data-tab="history" onclick="switchTab('history')">📋 History</button>
+            <button class="tab active" data-tab="home" onclick="switchTab('home')">🏠 Home</button>
+            <button class="tab" data-tab="journeys" onclick="switchTab('journeys')">🚗 Journeys</button>
+            <button class="tab" data-tab="history" onclick="switchTab('history')">🔌 Charges</button>
         </nav>
 
-        <!-- Insights Tab -->
-        <section id="insightsTab" class="tab-content active">
+        <!-- Home Tab -->
+        <section id="homeTab" class="tab-content active">
+            <!-- Charts -->
             <div id="chartsContainer" class="charts-container">
                 <h3>📈 Performance Trends</h3>
                 <div class="chart-wrapper">
@@ -56,37 +58,10 @@
                     <canvas id="costChart"></canvas>
                 </div>
             </div>
-            <div class="sort-row">
-                <select id="insightsSort" onchange="loadInsights()">
-                    <option value="newest">Newest first</option>
-                    <option value="oldest">Oldest first</option>
-                </select>
-            </div>
-            <div id="insightsList" class="insights-list"></div>
-        </section>
 
-        <!-- History Tab -->
-        <section id="historyTab" class="tab-content">
-            <div class="sort-row">
-                <select id="historySort" onchange="loadHistory()">
-                    <option value="newest">Newest first</option>
-                    <option value="oldest">Oldest first</option>
-                </select>
-                <button class="btn btn-danger btn-small" onclick="deleteAllData()">🗑️ Clear All</button>
-            </div>
-            <div id="historyList" class="history-list"></div>
-        </section>
-
-        <!-- Floating Action Button -->
-        <button class="fab" onclick="openAddModal()">+</button>
-
-        <!-- Add Charge Modal -->
-        <div id="addModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>➕ Add Charging Session</h3>
-                    <button class="modal-close" onclick="closeAddModal()">×</button>
-                </div>
+            <!-- Add Charge Form -->
+            <div class="add-section">
+                <h3>➕ Add Charging Session</h3>
                 <form id="chargeForm" class="charge-form">
                     <div class="form-row">
                         <div class="form-group">
@@ -135,10 +110,33 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success btn-large">💾 Save Charge</button>
+                    <button type="submit" class="btn btn-success btn-large">💾 Save Charging Session</button>
                 </form>
             </div>
-        </div>
+        </section>
+
+        <!-- Journeys Tab -->
+        <section id="journeysTab" class="tab-content">
+            <div class="sort-row">
+                <select id="insightsSort" onchange="loadInsights()">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                </select>
+            </div>
+            <div id="insightsList" class="insights-list"></div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="historyTab" class="tab-content">
+            <div class="sort-row">
+                <select id="historySort" onchange="loadHistory()">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                </select>
+                <button class="btn btn-danger btn-small" onclick="deleteAllData()">🗑️ Clear All</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+        </section>
 
         <!-- Toast Notification -->
         <div id="toast" class="toast"></div>
