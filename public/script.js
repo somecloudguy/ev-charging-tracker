@@ -25,6 +25,16 @@ function initApp() {
     loadAllData();
 }
 
+// Modal functions
+function openAddModal() {
+    document.getElementById('addModal').classList.remove('hidden');
+    document.getElementById('date').valueAsDate = new Date();
+}
+
+function closeAddModal() {
+    document.getElementById('addModal').classList.add('hidden');
+}
+
 // Tab navigation
 function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(tab => {
@@ -94,6 +104,7 @@ async function handleFormSubmit(e) {
             showToast('✓ Charge saved!', 'success');
             document.getElementById('chargeForm').reset();
             document.getElementById('date').valueAsDate = new Date();
+            closeAddModal();
             loadAllData();
         } else {
             const error = await response.json();
@@ -137,6 +148,8 @@ function loadInsights() {
         const previous = i > 0 ? sortedData[i - 1] : null;
         
         const kmRun = previous ? current.odometer - previous.odometer : 0;
+        const startOdometer = previous ? previous.odometer : 0;
+        const endOdometer = current.odometer;
         const percentUsed = previous ? previous.endPercent - current.startPercent : 0;
         
         let estimatedRange = 0;
@@ -159,6 +172,8 @@ function loadInsights() {
         insights.push({
             ...current,
             kmRun,
+            startOdometer,
+            endOdometer,
             percentUsed,
             estimatedRange,
             kwhConsumed,
@@ -190,6 +205,9 @@ function loadInsights() {
         return `
             <div class="insight-card">
                 <div class="date">📅 ${formatDate(insight.date)}</div>
+                <div class="odometer-range">
+                    🚗 ${insight.startOdometer.toLocaleString()} km <span class="arrow">→</span> ${insight.endOdometer.toLocaleString()} km
+                </div>
                 <div class="metrics">
                     <div class="metric ${rangeClass}">
                         <div class="value">${insight.estimatedRange.toFixed(0)}</div>
@@ -287,8 +305,8 @@ function updateCharts(data) {
         maintainAspectRatio: true,
         plugins: { legend: { display: false } },
         scales: {
-            x: { ticks: { color: '#B0B0B0', maxRotation: 45 }, grid: { color: '#3D3D3D' } },
-            y: { ticks: { color: '#B0B0B0' }, grid: { color: '#3D3D3D' } }
+            x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#334155' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
         }
     };
     
@@ -301,11 +319,11 @@ function updateCharts(data) {
             datasets: [{
                 label: 'Est. Range (km)',
                 data: rangeData,
-                backgroundColor: rangeData.map(v => v > 200 ? '#4CAF50' : (v < 160 ? '#f44336' : '#FF9800')),
-                borderRadius: 4
+                backgroundColor: rangeData.map(v => v > 200 ? '#10b981' : (v < 160 ? '#ef4444' : '#f59e0b')),
+                borderRadius: 6
             }]
         },
-        options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Estimated Range', color: '#fff' } } }
+        options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Estimated Range (km)', color: '#f8fafc', font: { size: 14, weight: '600' } } } }
     });
     
     const costCtx = document.getElementById('costChart').getContext('2d');
@@ -317,11 +335,11 @@ function updateCharts(data) {
             datasets: [{
                 label: 'Cost/km (₹)',
                 data: costData,
-                backgroundColor: costData.map(v => v > 3 ? '#f44336' : '#4CAF50'),
-                borderRadius: 4
+                backgroundColor: costData.map(v => v > 3 ? '#ef4444' : '#10b981'),
+                borderRadius: 6
             }]
         },
-        options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Cost per km', color: '#fff' } } }
+        options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Cost per km (₹)', color: '#f8fafc', font: { size: 14, weight: '600' } } } }
     });
 }
 
