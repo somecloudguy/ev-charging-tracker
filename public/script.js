@@ -27,17 +27,14 @@ function initApp() {
 
 // Tab navigation
 function switchTab(tabName) {
-    // Update tab buttons
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
     
-    // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.toggle('active', content.id === tabName + 'Tab');
     });
     
-    // Refresh data when switching to insights or history
     if (tabName === 'insights') {
         loadInsights();
     } else if (tabName === 'history') {
@@ -56,7 +53,7 @@ function saveSettings() {
         localStorage.setItem('batteryCapacity', capacity);
         toggleSettings();
         showToast('Settings saved!', 'success');
-        loadInsights(); // Recalculate insights with new capacity
+        loadInsights();
     } else {
         showToast('Invalid battery capacity', 'error');
     }
@@ -81,14 +78,13 @@ async function handleFormSubmit(e) {
         chargeType: document.getElementById('chargeType').value
     };
     
-    // Validation
     if (data.endPercent <= data.startPercent) {
         showToast('End % must be greater than Start %', 'error');
         return;
     }
     
     try {
-        const response = await fetch('/api/saveCharge', {
+        const response = await fetch('/api/charges', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -101,7 +97,7 @@ async function handleFormSubmit(e) {
             loadAllData();
         } else {
             const error = await response.json();
-            showToast(error.error || 'Error saving charge', 'error');
+            showToast('Server error: ' + (error.error || 'Unknown error'), 'error');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -112,7 +108,7 @@ async function handleFormSubmit(e) {
 // Load all data
 async function loadAllData() {
     try {
-        const response = await fetch('/api/getInsights');
+        const response = await fetch('/api/charges');
         if (response.ok) {
             chargeData = await response.json();
             loadInsights();
@@ -128,40 +124,29 @@ function loadInsights() {
     const sortOrder = document.getElementById('insightsSort').value;
     const batteryCapacity = getBatteryCapacity();
     
-    // Sort data by date
     let sortedData = [...chargeData].sort((a, b) => new Date(a.date) - new Date(b.date));
     
-    // Calculate insights for each charge
     const insights = [];
     for (let i = 0; i < sortedData.length; i++) {
         const current = sortedData[i];
         const previous = i > 0 ? sortedData[i - 1] : null;
         
-        // Calculate km run since last charge
         const kmRun = previous ? current.odometer - previous.odometer : 0;
-        
-        // Calculate battery percent used since last charge
         const percentUsed = previous ? previous.endPercent - current.startPercent : 0;
         
-        // Calculate estimated range (km for full charge)
         let estimatedRange = 0;
         if (percentUsed > 0) {
             estimatedRange = (kmRun / percentUsed) * 100;
         }
         
-        // Calculate energy consumed
         const kwhConsumed = (percentUsed / 100) * batteryCapacity;
-        
-        // Get cost per kWh from previous charge
         const costPerKwh = previous ? previous.costPerKwh : current.costPerKwh;
         
-        // Calculate cost per km
         let costPerKm = 0;
         if (kmRun > 0 && kwhConsumed > 0) {
             costPerKm = (kwhConsumed * costPerKwh) / kmRun;
         }
         
-        // Calculate charging speed
         const chargingSpeed = current.timeToCharge > 0 
             ? current.kwhUsed / current.timeToCharge 
             : 0;
@@ -177,12 +162,7 @@ function loadInsights() {
         });
     }
     
-    // Apply sort order for display
-    const displayData = sortOrder === 'newest' 
-        ? insights.reverse() 
-        : insights;
-    
-    // Filter out first entry (no previous data)
+    const displayData = sortOrder === 'newest' ? insights.reverse() : insights;
     const validInsights = displayData.filter(i => i.kmRun > 0);
     
     const container = document.getElementById('insightsList');
@@ -227,8 +207,7 @@ function loadInsights() {
         `;
     }).join('');
     
-    // Update charts
-    updateCharts(validInsights.reverse()); // Reverse back to chronological for charts
+    updateCharts(validInsights.reverse());
 }
 
 // Load history
@@ -301,22 +280,13 @@ function updateCharts(data) {
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: {
-            legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-            x: {
-                ticks: { color: '#B0B0B0', maxRotation: 45 },
-                grid: { color: '#3D3D3D' }
-            },
-            y: {
-                ticks: { color: '#B0B0B0' },
-                grid: { color: '#3D3D3D' }
-            }
+            x: { ticks: { color: '#B0B0B0', maxRotation: 45 }, grid: { color: '#3D3D3D' } },
+            y: { ticks: { color: '#B0B0B0' }, grid: { color: '#3D3D3D' } }
         }
     };
     
-    // Range chart
     const rangeCtx = document.getElementById('rangeChart').getContext('2d');
     if (rangeChart) rangeChart.destroy();
     rangeChart = new Chart(rangeCtx, {
@@ -333,7 +303,6 @@ function updateCharts(data) {
         options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Estimated Range', color: '#fff' } } }
     });
     
-    // Cost chart
     const costCtx = document.getElementById('costChart').getContext('2d');
     if (costChart) costChart.destroy();
     costChart = new Chart(costCtx, {
@@ -356,9 +325,7 @@ async function deleteCharge(id) {
     if (!confirm('Delete this charging record?')) return;
     
     try {
-        const response = await fetch(`/api/saveCharge?id=${id}`, {
-            method: 'DELETE'
-        });
+        const response = await fetch(`/api/charges/${id}`, { method: 'DELETE' });
         
         if (response.ok) {
             showToast('Record deleted', 'success');
@@ -378,9 +345,7 @@ async function deleteAllData() {
     if (!confirm('Are you really sure?')) return;
     
     try {
-        const response = await fetch('/api/saveCharge?deleteAll=true', {
-            method: 'DELETE'
-        });
+        const response = await fetch('/api/charges', { method: 'DELETE' });
         
         if (response.ok) {
             chargeData = [];
