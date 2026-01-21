@@ -441,12 +441,29 @@ async function importExcel(event) {
                 return isNaN(val) ? defaultVal : val;
             };
             
+            // Parse time in H:MM or HH:MM format (e.g., "8:30" = 8.5 hours)
+            const parseTime = (col) => {
+                if (col < 0 || col >= row.length) return 0;
+                const val = row[col];
+                if (typeof val === 'string' && val.includes(':')) {
+                    const parts = val.split(':');
+                    const hours = parseInt(parts[0]) || 0;
+                    const minutes = parseInt(parts[1]) || 0;
+                    return hours + (minutes / 60);
+                }
+                // If it's a decimal from Excel (time as fraction of day)
+                if (typeof val === 'number' && val < 1) {
+                    return val * 24; // Convert fraction of day to hours
+                }
+                return parseFloat(val) || 0;
+            };
+            
             const charge = {
                 date: dateValue,
                 odometer: getValue(colMap.odometer),
                 startPercent: getValue(colMap.startPercent),
                 endPercent: getValue(colMap.endPercent),
-                timeToCharge: getValue(colMap.timeToCharge),
+                timeToCharge: parseTime(colMap.timeToCharge),
                 kwhUsed: getValue(colMap.kwhUsed),
                 costPerKwh: getValue(colMap.costPerKwh),
                 chargeType: colMap.chargeType >= 0 ? (row[colMap.chargeType] || 'Slow') : 'Slow'
