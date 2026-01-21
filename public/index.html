@@ -6,137 +6,645 @@
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>EV Charging Tracker</title>
+    <title>My EV</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app">
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="car-avatar">🚗</div>
+                <div class="car-info">
+                    <h3>Tata Nexon EV</h3>
+                    <span class="plate">MH 01 AB 1234</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Dashboard</span>
+                </button>
+                <button class="nav-item" data-section="mycar" onclick="switchSection('mycar')">
+                    <span class="nav-icon">🚙</span>
+                    <span class="nav-label">My Car</span>
+                </button>
+                <button class="nav-item" data-section="charging" onclick="switchSection('charging')">
+                    <span class="nav-icon">🔌</span>
+                    <span class="nav-label">My Charging</span>
+                </button>
+                <button class="nav-item" data-section="trips" onclick="switchSection('trips')">
+                    <span class="nav-icon">🛣️</span>
+                    <span class="nav-label">Trip History</span>
+                </button>
+                <button class="nav-item" data-section="service" onclick="switchSection('service')">
+                    <span class="nav-icon">🔧</span>
+                    <span class="nav-label">Service</span>
+                </button>
+                <button class="nav-item" data-section="chargers" onclick="switchSection('chargers')">
+                    <span class="nav-icon">📍</span>
+                    <span class="nav-label">Find Chargers</span>
+                </button>
+                <button class="nav-item" data-section="settings" onclick="switchSection('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="app-version">My EV v2.0</div>
+            </div>
+        </aside>
+
         <!-- Header -->
         <header class="header">
-            <h1>⚡ EV Tracker</h1>
-            <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+            <button class="hamburger-btn" onclick="toggleSidebar()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1>My EV</h1>
+            <div class="header-right">
+                <span class="connection-status online">● Connected</span>
+            </div>
         </header>
 
-        <!-- Settings Panel -->
-        <div id="settingsPanel" class="settings-panel hidden">
-            <div class="settings-content">
-                <h3>Settings</h3>
-                <div class="form-group">
-                    <label>Battery Capacity (kWh)</label>
-                    <input type="number" id="batteryCapacity" step="0.1" value="30">
-                </div>
-                <button class="btn btn-primary" onclick="saveSettings()">Save</button>
-                <button class="btn btn-secondary" onclick="toggleSettings()">Cancel</button>
-                <hr>
-                <h4>Data Management</h4>
-                <button class="btn btn-secondary" onclick="exportData()">📤 Export JSON</button>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label>📥 Import from Excel</label>
-                    <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importExcel(event)">
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <nav class="tabs">
-            <button class="tab active" data-tab="home" onclick="switchTab('home')">🏠 Home</button>
-            <button class="tab" data-tab="journeys" onclick="switchTab('journeys')">🚗 Journeys</button>
-            <button class="tab" data-tab="history" onclick="switchTab('history')">🔌 Charges</button>
-        </nav>
-
-        <!-- Home Tab -->
-        <section id="homeTab" class="tab-content active">
-            <!-- Charts -->
-            <div id="chartsContainer" class="charts-container">
-                <h3>📈 Performance Trends</h3>
-                <div class="chart-wrapper">
-                    <canvas id="rangeChart"></canvas>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="costChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Add Charge Form -->
-            <div class="add-section">
-                <h3>➕ Add Charging Session</h3>
-                <form id="chargeForm" class="charge-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="date" required>
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="section active">
+                <div class="car-status-card">
+                    <div class="car-visual">
+                        <div class="car-image">🚗</div>
+                        <div class="car-name">Tata Nexon EV Max</div>
+                        <div class="last-updated">Last synced: 2 mins ago</div>
+                    </div>
+                    <div class="status-grid">
+                        <div class="status-item battery">
+                            <div class="status-icon">🔋</div>
+                            <div class="status-info">
+                                <div class="status-value">72%</div>
+                                <div class="status-label">Battery</div>
+                            </div>
+                            <div class="battery-bar">
+                                <div class="battery-fill" style="width: 72%"></div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Odometer (km)</label>
-                            <input type="number" id="odometer" placeholder="12345" required>
+                        <div class="status-item range">
+                            <div class="status-icon">📏</div>
+                            <div class="status-info">
+                                <div class="status-value">198 km</div>
+                                <div class="status-label">Est. Range</div>
+                            </div>
+                        </div>
+                        <div class="status-item location">
+                            <div class="status-icon">📍</div>
+                            <div class="status-info">
+                                <div class="status-value">Home</div>
+                                <div class="status-label">Andheri West</div>
+                            </div>
+                        </div>
+                        <div class="status-item temp">
+                            <div class="status-icon">🌡️</div>
+                            <div class="status-info">
+                                <div class="status-value">28°C</div>
+                                <div class="status-label">Cabin Temp</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Start %</label>
-                            <input type="number" id="startPercent" min="0" max="100" placeholder="20" required>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Quick Controls</h3>
+                    <div class="actions-grid">
+                        <button class="action-btn" onclick="toggleCarLock()">
+                            <span class="action-icon" id="lockIcon">🔒</span>
+                            <span class="action-label" id="lockLabel">Locked</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleClimate()">
+                            <span class="action-icon">❄️</span>
+                            <span class="action-label">Climate</span>
+                        </button>
+                        <button class="action-btn" onclick="honkHorn()">
+                            <span class="action-icon">📢</span>
+                            <span class="action-label">Horn</span>
+                        </button>
+                        <button class="action-btn" onclick="flashLights()">
+                            <span class="action-icon">💡</span>
+                            <span class="action-label">Lights</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-summary">
+                    <h3>This Month</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-value">847 km</div>
+                            <div class="summary-label">Distance</div>
                         </div>
-                        <div class="form-group">
-                            <label>End %</label>
-                            <input type="number" id="endPercent" min="0" max="100" placeholder="80" required>
+                        <div class="summary-item">
+                            <div class="summary-value">₹1,240</div>
+                            <div class="summary-label">Charging Cost</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">12</div>
+                            <div class="summary-label">Trips</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">₹1.46</div>
+                            <div class="summary-label">Avg ₹/km</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My Car Section -->
+            <section id="mycarSection" class="section">
+                <div class="section-card">
+                    <h3>🚙 Vehicle Details</h3>
+                    <div class="info-list">
+                        <div class="info-row">
+                            <span class="info-label">Model</span>
+                            <span class="info-value">Tata Nexon EV Max</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Year</span>
+                            <span class="info-value">2024</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Color</span>
+                            <span class="info-value">Intensi-Teal</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">VIN</span>
+                            <span class="info-value">MAT***********7892</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Registration</span>
+                            <span class="info-value">MH 01 AB 1234</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Battery Capacity</span>
+                            <span class="info-value">40.5 kWh</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Motor Power</span>
+                            <span class="info-value">143 PS / 250 Nm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>📊 Lifetime Stats</h3>
+                    <div class="stats-grid-large">
+                        <div class="stat-box">
+                            <div class="stat-value">12,456</div>
+                            <div class="stat-label">Total km</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">1,847</div>
+                            <div class="stat-label">kWh Used</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">₹15,280</div>
+                            <div class="stat-label">Total Saved*</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">892 kg</div>
+                            <div class="stat-label">CO₂ Saved</div>
+                        </div>
+                    </div>
+                    <p class="stat-note">*Compared to petrol equivalent</p>
+                </div>
+
+                <div class="section-card">
+                    <h3>🛡️ Warranty Status</h3>
+                    <div class="warranty-info">
+                        <div class="warranty-item">
+                            <span class="warranty-type">Vehicle Warranty</span>
+                            <span class="warranty-status active">Active until Mar 2027</span>
+                        </div>
+                        <div class="warranty-item">
+                            <span class="warranty-type">Battery Warranty</span>
+                            <span class="warranty-status active">Active until Mar 2032</span>
+                        </div>
+                        <div class="warranty-item">
+                            <span class="warranty-type">Extended Warranty</span>
+                            <span class="warranty-status inactive">Not Purchased</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charging Section (Our Main Feature) -->
+            <section id="chargingSection" class="section">
+                <!-- Sub-navigation -->
+                <nav class="sub-tabs">
+                    <button class="sub-tab active" data-tab="home" onclick="switchChargingTab('home')">🏠 Home</button>
+                    <button class="sub-tab" data-tab="journeys" onclick="switchChargingTab('journeys')">🚗 Journeys</button>
+                    <button class="sub-tab" data-tab="history" onclick="switchChargingTab('history')">🔌 Charges</button>
+                </nav>
+
+                <!-- Home Tab -->
+                <div id="homeTab" class="charging-tab active">
+                    <div id="chartsContainer" class="charts-container">
+                        <h3>📈 Performance Trends</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="rangeChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="costChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Time (hours)</label>
-                            <input type="number" id="timeToCharge" step="0.1" placeholder="2.5" required>
+                    <div class="add-section">
+                        <h3>➕ Add Charging Session</h3>
+                        <form id="chargeForm" class="charge-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date</label>
+                                    <input type="date" id="date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Odometer</label>
+                                    <input type="number" id="odometer" placeholder="km" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Start %</label>
+                                    <input type="number" id="startPercent" min="0" max="100" placeholder="20" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>End %</label>
+                                    <input type="number" id="endPercent" min="0" max="100" placeholder="80" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Time (hrs)</label>
+                                    <input type="number" id="timeToCharge" step="0.1" placeholder="2.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>kWh</label>
+                                    <input type="number" id="kwhUsed" step="0.1" placeholder="15" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>₹/kWh</label>
+                                    <input type="number" id="costPerKwh" step="0.01" placeholder="8.50" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Type</label>
+                                    <select id="chargeType" required>
+                                        <option value="Slow">Slow</option>
+                                        <option value="Fast">Fast</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-large">💾 Save Session</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Journeys Tab -->
+                <div id="journeysTab" class="charging-tab">
+                    <div class="sort-row">
+                        <select id="insightsSort" onchange="loadInsights()">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                        </select>
+                    </div>
+                    <div id="insightsList" class="insights-list"></div>
+                </div>
+
+                <!-- History Tab -->
+                <div id="historyTab" class="charging-tab">
+                    <div class="sort-row">
+                        <select id="historySort" onchange="loadHistory()">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                        </select>
+                        <button class="btn btn-danger btn-small" onclick="deleteAllData()">🗑️ Clear</button>
+                    </div>
+                    <div id="historyList" class="history-list"></div>
+                </div>
+            </section>
+
+            <!-- Trip History Section -->
+            <section id="tripsSection" class="section">
+                <div class="section-header">
+                    <h3>🛣️ Recent Trips</h3>
+                </div>
+                <div class="trips-list">
+                    <div class="trip-card">
+                        <div class="trip-header">
+                            <span class="trip-date">Today, 9:15 AM</span>
+                            <span class="trip-score good">Eco Score: 92</span>
                         </div>
-                        <div class="form-group">
-                            <label>kWh Used</label>
-                            <input type="number" id="kwhUsed" step="0.1" placeholder="15" required>
+                        <div class="trip-route">
+                            <span class="trip-from">🏠 Home</span>
+                            <span class="trip-arrow">→</span>
+                            <span class="trip-to">🏢 Office</span>
+                        </div>
+                        <div class="trip-stats">
+                            <div class="trip-stat">
+                                <strong>18.5 km</strong>
+                                <span>Distance</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>42 min</strong>
+                                <span>Duration</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>8%</strong>
+                                <span>Battery</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>₹12</strong>
+                                <span>Cost</span>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Cost/kWh (₹)</label>
-                            <input type="number" id="costPerKwh" step="0.01" placeholder="8.50" required>
+                    <div class="trip-card">
+                        <div class="trip-header">
+                            <span class="trip-date">Yesterday, 6:30 PM</span>
+                            <span class="trip-score average">Eco Score: 78</span>
                         </div>
-                        <div class="form-group">
-                            <label>Charge Type</label>
-                            <select id="chargeType" required>
-                                <option value="Slow">Slow</option>
-                                <option value="Fast">Fast</option>
-                            </select>
+                        <div class="trip-route">
+                            <span class="trip-from">🏢 Office</span>
+                            <span class="trip-arrow">→</span>
+                            <span class="trip-to">🏠 Home</span>
+                        </div>
+                        <div class="trip-stats">
+                            <div class="trip-stat">
+                                <strong>21.2 km</strong>
+                                <span>Distance</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>58 min</strong>
+                                <span>Duration</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>11%</strong>
+                                <span>Battery</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>₹15</strong>
+                                <span>Cost</span>
+                            </div>
                         </div>
                     </div>
+                    <div class="trip-card">
+                        <div class="trip-header">
+                            <span class="trip-date">Jan 19, 11:00 AM</span>
+                            <span class="trip-score good">Eco Score: 88</span>
+                        </div>
+                        <div class="trip-route">
+                            <span class="trip-from">🏠 Home</span>
+                            <span class="trip-arrow">→</span>
+                            <span class="trip-to">🛒 Phoenix Mall</span>
+                        </div>
+                        <div class="trip-stats">
+                            <div class="trip-stat">
+                                <strong>12.8 km</strong>
+                                <span>Distance</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>28 min</strong>
+                                <span>Duration</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>6%</strong>
+                                <span>Battery</span>
+                            </div>
+                            <div class="trip-stat">
+                                <strong>₹9</strong>
+                                <span>Cost</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                    <button type="submit" class="btn btn-success btn-large">💾 Save Charging Session</button>
-                </form>
-            </div>
-        </section>
+            <!-- Service Section -->
+            <section id="serviceSection" class="section">
+                <div class="section-card">
+                    <h3>🔧 Service Status</h3>
+                    <div class="service-status">
+                        <div class="service-indicator good">
+                            <span class="indicator-dot"></span>
+                            <span>All Systems Normal</span>
+                        </div>
+                        <div class="next-service">
+                            <span class="label">Next Service Due</span>
+                            <span class="value">Mar 15, 2026 or 15,000 km</span>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Journeys Tab -->
-        <section id="journeysTab" class="tab-content">
-            <div class="sort-row">
-                <select id="insightsSort" onchange="loadInsights()">
-                    <option value="newest">Newest first</option>
-                    <option value="oldest">Oldest first</option>
-                </select>
-            </div>
-            <div id="insightsList" class="insights-list"></div>
-        </section>
+                <div class="section-card">
+                    <h3>📋 Maintenance Schedule</h3>
+                    <div class="maintenance-list">
+                        <div class="maintenance-item">
+                            <div class="maint-icon">🔋</div>
+                            <div class="maint-info">
+                                <span class="maint-name">Battery Health Check</span>
+                                <span class="maint-status">98% - Excellent</span>
+                            </div>
+                            <span class="maint-date">Checked Jan 10</span>
+                        </div>
+                        <div class="maintenance-item">
+                            <div class="maint-icon">🛞</div>
+                            <div class="maint-info">
+                                <span class="maint-name">Tyre Rotation</span>
+                                <span class="maint-status due">Due Soon</span>
+                            </div>
+                            <span class="maint-date">At 15,000 km</span>
+                        </div>
+                        <div class="maintenance-item">
+                            <div class="maint-icon">💧</div>
+                            <div class="maint-info">
+                                <span class="maint-name">Coolant Level</span>
+                                <span class="maint-status">Normal</span>
+                            </div>
+                            <span class="maint-date">Checked Jan 10</span>
+                        </div>
+                        <div class="maintenance-item">
+                            <div class="maint-icon">🔌</div>
+                            <div class="maint-info">
+                                <span class="maint-name">Charging Port</span>
+                                <span class="maint-status">Normal</span>
+                            </div>
+                            <span class="maint-date">Checked Jan 10</span>
+                        </div>
+                        <div class="maintenance-item">
+                            <div class="maint-icon">💨</div>
+                            <div class="maint-info">
+                                <span class="maint-name">Cabin Air Filter</span>
+                                <span class="maint-status">Good</span>
+                            </div>
+                            <span class="maint-date">Replaced Dec 2025</span>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- History Tab -->
-        <section id="historyTab" class="tab-content">
-            <div class="sort-row">
-                <select id="historySort" onchange="loadHistory()">
-                    <option value="newest">Newest first</option>
-                    <option value="oldest">Oldest first</option>
-                </select>
-                <button class="btn btn-danger btn-small" onclick="deleteAllData()">🗑️ Clear All</button>
-            </div>
-            <div id="historyList" class="history-list"></div>
-        </section>
+                <div class="section-card">
+                    <h3>📞 Service Center</h3>
+                    <div class="service-center">
+                        <div class="center-name">Tata Motors - Andheri</div>
+                        <div class="center-address">Plot 42, MIDC, Andheri East</div>
+                        <div class="center-actions">
+                            <button class="btn btn-secondary">📞 Call</button>
+                            <button class="btn btn-primary">📅 Book Service</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Find Chargers Section -->
+            <section id="chargersSection" class="section">
+                <div class="map-placeholder">
+                    <div class="map-icon">🗺️</div>
+                    <p>Map Loading...</p>
+                    <small>Showing chargers near you</small>
+                </div>
+                
+                <div class="chargers-list">
+                    <h3>Nearby Chargers</h3>
+                    <div class="charger-card">
+                        <div class="charger-header">
+                            <span class="charger-name">⚡ Tata Power - Phoenix Mall</span>
+                            <span class="charger-distance">2.4 km</span>
+                        </div>
+                        <div class="charger-details">
+                            <span class="charger-type fast">DC Fast • 60kW</span>
+                            <span class="charger-status available">● 2 Available</span>
+                        </div>
+                        <div class="charger-price">₹18/kWh</div>
+                    </div>
+                    <div class="charger-card">
+                        <div class="charger-header">
+                            <span class="charger-name">⚡ EESL - Infiniti Mall</span>
+                            <span class="charger-distance">3.1 km</span>
+                        </div>
+                        <div class="charger-details">
+                            <span class="charger-type slow">AC • 7.4kW</span>
+                            <span class="charger-status available">● 1 Available</span>
+                        </div>
+                        <div class="charger-price">₹12/kWh</div>
+                    </div>
+                    <div class="charger-card">
+                        <div class="charger-header">
+                            <span class="charger-name">⚡ Statiq - Oshiwara</span>
+                            <span class="charger-distance">4.8 km</span>
+                        </div>
+                        <div class="charger-details">
+                            <span class="charger-type fast">DC Fast • 30kW</span>
+                            <span class="charger-status busy">● Occupied</span>
+                        </div>
+                        <div class="charger-price">₹16/kWh</div>
+                    </div>
+                    <div class="charger-card">
+                        <div class="charger-header">
+                            <span class="charger-name">⚡ ChargeZone - Lokhandwala</span>
+                            <span class="charger-distance">5.2 km</span>
+                        </div>
+                        <div class="charger-details">
+                            <span class="charger-type slow">AC • 22kW</span>
+                            <span class="charger-status available">● 3 Available</span>
+                        </div>
+                        <div class="charger-price">₹14/kWh</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settingsSection" class="section">
+                <div class="section-card">
+                    <h3>🔋 Battery Settings</h3>
+                    <div class="form-group">
+                        <label>Battery Capacity (kWh)</label>
+                        <input type="number" id="batteryCapacity" step="0.1" value="40.5">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+                </div>
+
+                <div class="section-card">
+                    <h3>🔔 Notifications</h3>
+                    <div class="toggle-list">
+                        <div class="toggle-item">
+                            <span>Charging Complete</span>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-item">
+                            <span>Low Battery Alert</span>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-item">
+                            <span>Service Reminders</span>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-item">
+                            <span>Security Alerts</span>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>📤 Data Management</h3>
+                    <button class="btn btn-secondary" onclick="exportData()">📤 Export Charging Data</button>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>📥 Import from Excel</label>
+                        <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importExcel(event)">
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>👤 Account</h3>
+                    <div class="info-list">
+                        <div class="info-row">
+                            <span class="info-label">Name</span>
+                            <span class="info-value">Karan Desai</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">karan@example.com</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">+91 98765 43210</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" style="margin-top: 16px;">Sign Out</button>
+                </div>
+            </section>
+
+        </main>
 
         <!-- Toast Notification -->
         <div id="toast" class="toast"></div>

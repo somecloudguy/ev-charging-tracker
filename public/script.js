@@ -2,6 +2,7 @@
 let chargeData = [];
 let rangeChart = null;
 let costChart = null;
+let carLocked = true;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,13 +26,41 @@ function initApp() {
     loadAllData();
 }
 
-// Tab navigation
-function switchTab(tabName) {
-    document.querySelectorAll('.tab').forEach(tab => {
+// Sidebar navigation
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.querySelector('.sidebar-overlay').classList.toggle('active');
+}
+
+function switchSection(sectionName) {
+    // Update nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.section === sectionName);
+    });
+    
+    // Update sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.toggle('active', section.id === sectionName + 'Section');
+    });
+    
+    // Close sidebar
+    toggleSidebar();
+    
+    // Load section-specific data
+    if (sectionName === 'charging') {
+        updateCharts(getValidInsights());
+        loadInsights();
+        loadHistory();
+    }
+}
+
+// Charging sub-tabs
+function switchChargingTab(tabName) {
+    document.querySelectorAll('.sub-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
     
-    document.querySelectorAll('.tab-content').forEach(content => {
+    document.querySelectorAll('.charging-tab').forEach(content => {
         content.classList.toggle('active', content.id === tabName + 'Tab');
     });
     
@@ -44,16 +73,31 @@ function switchTab(tabName) {
     }
 }
 
-// Settings
-function toggleSettings() {
-    document.getElementById('settingsPanel').classList.toggle('hidden');
+// Quick actions (dummy functionality)
+function toggleCarLock() {
+    carLocked = !carLocked;
+    document.getElementById('lockIcon').textContent = carLocked ? '🔒' : '🔓';
+    document.getElementById('lockLabel').textContent = carLocked ? 'Locked' : 'Unlocked';
+    showToast(carLocked ? '🔒 Car locked' : '🔓 Car unlocked', 'success');
 }
 
+function toggleClimate() {
+    showToast('❄️ Climate control: Cooling to 22°C', 'success');
+}
+
+function honkHorn() {
+    showToast('📢 Horn activated', 'success');
+}
+
+function flashLights() {
+    showToast('💡 Lights flashed', 'success');
+}
+
+// Settings
 function saveSettings() {
     const capacity = document.getElementById('batteryCapacity').value;
     if (capacity && capacity > 0) {
         localStorage.setItem('batteryCapacity', capacity);
-        toggleSettings();
         showToast('Settings saved!', 'success');
         loadInsights();
     } else {
@@ -62,7 +106,7 @@ function saveSettings() {
 }
 
 function getBatteryCapacity() {
-    return parseFloat(localStorage.getItem('batteryCapacity')) || 30;
+    return parseFloat(localStorage.getItem('batteryCapacity')) || 40.5;
 }
 
 // Form submission
