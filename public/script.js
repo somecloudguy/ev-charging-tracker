@@ -379,6 +379,90 @@ function exportData() {
     showToast('Data exported!', 'success');
 }
 
+// Import from Excel
+async function importExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    showToast('Reading Excel file...', 'success');
+    
+    try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        
+        // Skip header row, process data rows
+        const charges = [];
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length < 7) continue;
+            
+            // Parse date - handle Excel date serial numbers
+            let dateValue = row[0];
+            if (typeof dateValue === 'number') {
+                // Excel date serial number
+                const date = new Date((dateValue - 25569) * 86400 * 1000);
+                dateValue = date.toISOString().split('T')[0];
+            } else if (dateValue instanceof Date) {
+                dateValue = dateValue.toISOString().split('T')[0];
+            } else if (typeof dateValue === 'string') {
+                // Try to parse string date
+                const parsed = new Date(dateValue);
+                if (!isNaN(parsed)) {
+                    dateValue = parsed.toISOString().split('T')[0];
+                }
+            }
+            
+            const charge = {
+                date: dateValue,
+                odometer: parseFloat(row[1]) || 0,
+                startPercent: parseFloat(row[2]) || 0,
+                endPercent: parseFloat(row[3]) || 0,
+                timeToCharge: parseFloat(row[4]) || 0,
+                kwhUsed: parseFloat(row[5]) || 0,
+                costPerKwh: parseFloat(row[6]) || 0,
+                chargeType: row[7] || 'Slow'
+            };
+            
+            if (charge.odometer > 0 && charge.date) {
+                charges.push(charge);
+            }
+        }
+        
+        if (charges.length === 0) {
+            showToast('No valid data found in Excel', 'error');
+            return;
+        }
+        
+        // Upload each charge to the API
+        showToast(`Importing ${charges.length} records...`, 'success');
+        let imported = 0;
+        
+        for (const charge of charges) {
+            try {
+                const response = await fetch('/api/charges', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(charge)
+                });
+                if (response.ok) imported++;
+            } catch (err) {
+                console.error('Failed to import:', charge, err);
+            }
+        }
+        
+        showToast(`✓ Imported ${imported} of ${charges.length} records!`, 'success');
+        document.getElementById('excelFile').value = '';
+        toggleSettings();
+        loadAllData();
+        
+    } catch (error) {
+        console.error('Excel import error:', error);
+        showToast('Error reading Excel file', 'error');
+    }
+}
+
 // Utility functions
 function formatDate(dateStr, short = false) {
     const date = new Date(dateStr);

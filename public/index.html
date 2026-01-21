@@ -32,6 +32,11 @@
                 <hr>
                 <h4>Data Management</h4>
                 <button class="btn btn-secondary" onclick="exportData()">📤 Export JSON</button>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>📥 Import from Excel</label>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls" onchange="importExcel(event)">
+                    <small style="color: #888;">Columns: Date, Odometer, Start%, End%, Hours, kWh, Cost/kWh, Type</small>
+                </div>
             </div>
         </div>
 
@@ -133,6 +138,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
